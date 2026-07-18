@@ -1,0 +1,65 @@
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Local editor / agent tooling (never part of the portfolio repo)
+.claude/
+.mcp.json
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/build/
+*.tsbuildinfo
+.npm
+.vite/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Docker volumes / local data
+postgres_data/
+*.log
+
+# Local databases & vector store — NEVER commit client data or portfolio vectors
+data/
+./data/
+*.db
+*.sqlite
+*.sqlite3
+sterling.db
+chroma_db/
+data/chroma_db/
+data/chroma/
+data/captcha_pauses/
+
+# Coverage / reports
+coverage/
+.nyc_output/

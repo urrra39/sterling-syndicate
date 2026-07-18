@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(197, 160, 89, 0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(17, 36, 25, 0.55), transparent),
+    #050e09;
+}
+
+::selection {
+  background: rgba(197, 160, 89, 0.3);
+  color: #fff;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.7s ease-out forwards;
+  }
+}

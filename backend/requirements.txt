@@ -1,0 +1,52 @@
+# Web framework
+fastapi>=0.115.6
+# starlette floor: PYSEC-2026-161/248/249/1941/1942/2280/2281
+# NOTE: starlette has no 1.x release; newest published is 0.49.x
+starlette>=0.47.2
+uvicorn[standard]>=0.34.0
+# python-multipart floor: patched for CVE-2024-53981 (DoS via malformed multipart)
+python-multipart>=0.0.18
+
+# Prefer binary wheels on Windows (avoids MSVC build of greenlet)
+# Install tip: pip install --only-binary=:all: greenlet==3.1.1
+greenlet==3.1.1
+
+# Database
+sqlalchemy==2.0.36
+psycopg[binary]==3.2.3
+alembic==1.14.0
+pgvector==0.3.6
+
+# Auth & security
+PyJWT>=2.8.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.1
+cryptography>=48.0.1  # patches PYSEC-2026-35/1284/2141 + GHSA-537c-gmf6-5ccf
+pydantic[email]==2.10.4
+pydantic-settings==2.7.0
+email-validator==2.2.0
+
+# HTTP / utilities
+httpx==0.28.1
+python-dotenv>=1.2.1  # latest published; advisory-listed 1.2.2 not yet on PyPI
+
+# Multi-agent + RAG
+chromadb==0.5.23
+# langgraph 0.3.15 patches PYSEC-2026-2194; app uses only the stable
+# StateGraph/add_node/add_edge/END API (unchanged across 0.3/0.4/0.5/0.6).
+langgraph>=0.3.34,<0.4
+# langchain-core 0.3.85 patches PYSEC-2026-2563/2564 (stays in 0.3.x for langgraph compat)
+langchain-core>=0.3.85,<0.4
+
+# Testing (test-only; never imported by the running app image)
+# PYSEC-2026-1845 is fixed only in pytest 9.x, which drops Python 3.9 and pulls
+# pytest-asyncio 1.x (breaking config changes). This dev box is Python 3.9, so
+# that combo cannot be verified here; shipping it unverified risks turning CI
+# red. Since the advisory has ZERO runtime exposure (pytest is a dev/test-only
+# tool, never imported by app code), we keep the verified-green pins rather than
+# gamble CI on an unverifiable major bump. Revisit when a 3.10+ dev env exists.
+pytest==8.3.4
+pytest-asyncio==0.25.0
+
+# Local Python 3.9 compatibility (Docker uses 3.11; harmless on 3.11+)
+eval_type_backport==0.4.0

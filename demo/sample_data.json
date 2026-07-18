@@ -1,0 +1,33 @@
+{
+  "demo_user": {
+    "name": "Alex Rivera",
+    "email": "alex.demo@sterling.example",
+    "password": "DemoPass123!",
+    "skills": ["python", "fastapi", "react", "postgresql", "typescript"],
+    "portfolio_summary": "Full-stack engineer shipping FastAPI backends and React dashboards for SaaS clients."
+  },
+  "leads": [
+    {
+      "source": "manual",
+      "title": "FastAPI microservice for billing webhooks",
+      "category": "backend",
+      "raw_text": "Need a senior Python engineer to build FastAPI endpoints that ingest Stripe webhooks, store events in PostgreSQL, and expose a small React admin view. Docker required. 4–6 week engagement.",
+      "pipeline_status": "drafting"
+    },
+    {
+      "source": "remoteok",
+      "title": "Remote React dashboard polish",
+      "category": "frontend",
+      "raw_text": "Looking for TypeScript/React help to improve an analytics dashboard: charts, filters, and accessibility. Part-time, 20 hrs/week.",
+      "pipeline_status": "new"
+    },
+    {
+      "source": "manual",
+      "title": "Logo redesign for coffee brand",
+      "category": "design",
+      "raw_text": "We need a playful logo and packaging illustration for a specialty coffee brand. Print-ready files required.",
+      "pipeline_status": "lost"
+    }
+  ],
+  "note": "Fully synthetic. No real client names, emails, or marketplace IDs."
+}

@@ -1,0 +1,33 @@
+name: Keep Render awake
+
+# Free-tier Render services sleep after ~15 min idle. Ping the API health
+# endpoint on a schedule so the app stays warm without a laptop running.
+on:
+  schedule:
+    - cron: "*/12 * * * *" # every 12 minutes (< Render's ~15 min idle window)
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API health
+        run: |
+          set -euo pipefail
+          for url in \
+            "https://sterling-api-6u7n.onrender.com/health" \
+            "https://sterling-web-6u7n.onrender.com"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 --retry 2 "$url" || echo "000")
+            echo "$url -> HTTP $code"
+            case "$code" in
+              2*|3*) ;;                       # awake (or redirect) — fine
+              *) echo "::warning::$url returned $code" ;;
+            esac
+          done
