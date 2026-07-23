@@ -23,7 +23,7 @@ jobs:
       CORS_ORIGINS: "http://localhost:5173"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -72,7 +72,7 @@ jobs:
       CORS_ORIGINS: "http://localhost:5173"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
