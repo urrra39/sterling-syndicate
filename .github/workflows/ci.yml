@@ -33,7 +33,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Dependency vulnerability audit (pip-audit)
-        # Gates on *direct* deps that have a published fix (see scripts/gate_pip_audit.py).
+        # Gates on *direct* deps that have a published fix, including major-bump-only
+        # fixes unless explicitly exempted (see scripts/gate_pip_audit.py).
         # Transitive / unfixed advisories are logged but do not fail the job.
         run: |
           pip install pip-audit

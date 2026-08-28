@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Fail CI only when a *direct* dependency has a same-major published fix.
+"""Fail CI when a *direct* dependency has a published fix.
 
-Major upgrades (e.g. langgraph 0.3 → 1.x) are logged but do not block — they
-need a dedicated compatibility PR. Test-only residuals are ignored.
+Same-major fixes block outright. Major-bump-only fixes (e.g. langgraph 0.3 →
+1.x) need a dedicated compatibility PR, so they block until the advisory is
+listed in IGNORE with a reason. Advisories with no fix, and transitive deps,
+are logged only.
 """
 
 from __future__ import annotations
@@ -64,6 +66,12 @@ def _same_major_fix(installed: str, fix_versions: list) -> bool:
     return False
 
 
+def _ids(vuln: dict) -> list[str]:
+    """Advisory id plus aliases — pip-audit may report either form."""
+    out = [vuln.get("id")] + list(vuln.get("aliases") or [])
+    return [str(v) for v in out if v]
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("usage: gate_pip_audit.py <audit.json>", file=sys.stderr)
@@ -73,33 +81,43 @@ def main() -> int:
         print(f"pip-audit gate: missing {path} — treating as OK (audit produced no file)")
         return 0
     data = json.loads(path.read_text(encoding="utf-8"))
-    deps = data if isinstance(data, list) else data.get("dependencies", data)
+    deps = data if isinstance(data, list) else data.get("dependencies") or []
 
     blockers: list[str] = []
     noted: list[str] = []
     for dep in deps:
+        if not isinstance(dep, dict):
+            continue
         name = (dep.get("name") or "").lower().replace("_", "-")
         installed = str(dep.get("version") or "")
         for vuln in dep.get("vulns") or []:
-            vid = vuln.get("id") or (vuln.get("aliases") or ["?"])[0]
-            if vid in IGNORE:
-                noted.append(f"ignored {vid} in {name}")
+            ids = _ids(vuln)
+            vid = ids[0] if ids else "?"
+            exempt = next((i for i in ids if i in IGNORE), None)
+            if exempt:
+                noted.append(f"ignored {exempt} in {name}")
                 continue
             fixes = vuln.get("fix_versions") or []
-            if name in DIRECT and fixes and _same_major_fix(installed, fixes):
+            if not fixes:
+                noted.append(f"{name}: {vid} (unfixed upstream)")
+            elif name not in DIRECT:
+                noted.append(f"{name}: {vid} (transitive)")
+            elif _same_major_fix(installed, fixes):
                 blockers.append(f"{name}@{installed}: {vid} (fix >= {fixes[0]})")
             else:
-                why = "major-bump-only or transitive" if fixes else "unfixed"
-                noted.append(f"{name}: {vid} ({why})")
+                blockers.append(
+                    f"{name}@{installed}: {vid} (major-bump fix {fixes[0]} — "
+                    "needs a compatibility PR or an IGNORE entry)"
+                )
 
     for line in noted:
         print(f"note: {line}")
     if blockers:
-        print("BLOCKING direct-dependency advisories with same-major fixes:")
+        print("BLOCKING direct-dependency advisories with a published fix:")
         for line in blockers:
             print(f"  - {line}")
         return 1
-    print("pip-audit gate: OK (no blocking same-major direct-dep fixes)")
+    print("pip-audit gate: OK (no fixable direct-dep advisories)")
     return 0
 
 
