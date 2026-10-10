@@ -38,6 +38,7 @@ _COOKIE_MAX_AGE = settings.access_token_expire_minutes * 60
 _FORGOT_PW_LIMIT = 5
 _FORGOT_PW_WINDOW_SECONDS = 900  # 5 requests / 15 min per client
 _AUTH_LIMIT = 20
+_DUMMY_HASH = hash_password("timing-equalizer")
 _AUTH_WINDOW_SECONDS = 900  # 20 login/signup attempts / 15 min per client
 
 
@@ -99,7 +100,7 @@ def signup(
     invite_required = (settings.signup_invite_code or "").strip()
     if invite_required:
         provided = (payload.invite_code or "").strip()
-        if not provided or provided != invite_required:
+        if not provided or not secrets.compare_digest(provided, invite_required):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Valid invite code required for signup.",
@@ -157,6 +158,9 @@ def login(
         window_seconds=_AUTH_WINDOW_SECONDS,
     )
     user = db.scalar(select(User).where(User.email == payload.email.lower()))
+    if user is None:
+        # Burn a hash so response time doesn't reveal whether the email exists.
+        verify_password(payload.password, _DUMMY_HASH)
     if user is None or not verify_password(payload.password, user.password_hash):
         # Same message for both cases — avoid user enumeration
         raise HTTPException(
