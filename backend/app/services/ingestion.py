@@ -8,7 +8,7 @@ NON-NEGOTIABLE: no Upwork/Fiverr login automation or scrapers for gated pages.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
-from xml.etree import ElementTree
+from defusedxml import ElementTree
 
 import httpx
 
