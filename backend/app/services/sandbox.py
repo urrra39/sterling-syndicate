@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import dataclass
@@ -327,7 +328,7 @@ def _run_subprocess(code: str, *, timeout_sec: int) -> SandboxResult:
         t0 = time.monotonic()
         try:
             proc = subprocess.run(
-                ["python", "-u", str(script)],
+                [sys.executable, "-u", str(script)],
                 capture_output=True,
                 timeout=timeout_sec,
                 text=True,

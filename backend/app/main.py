@@ -156,6 +156,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Last-hop scrub: strip <<<UNTRUSTED_*>>> / <system> leaks from JSON bodies
+app.add_middleware(OutputSanitizerMiddleware)
+
+# CSRF (cookie sessions) → rate limit → security headers (outermost) so 403/429/500
+# responses still carry HSTS / frame / MIME protections.
+app.add_middleware(CsrfGuardMiddleware)
+app.add_middleware(
+    RateLimitMiddleware,
+    limit=GLOBAL_RATE_LIMIT,
+    window_seconds=GLOBAL_RATE_WINDOW_SECONDS,
+)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Outermost, so 403/429 responses from the guards above still carry CORS headers
+# and the SPA can read the error instead of seeing an opaque network failure.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -174,19 +189,6 @@ app.add_middleware(
     expose_headers=["Content-Type", "Content-Length"],
     max_age=600,
 )
-
-# Last-hop scrub: strip <<<UNTRUSTED_*>>> / <system> leaks from JSON bodies
-app.add_middleware(OutputSanitizerMiddleware)
-
-# CSRF (cookie sessions) → rate limit → security headers (outermost) so 403/429/500
-# responses still carry HSTS / frame / MIME protections.
-app.add_middleware(CsrfGuardMiddleware)
-app.add_middleware(
-    RateLimitMiddleware,
-    limit=GLOBAL_RATE_LIMIT,
-    window_seconds=GLOBAL_RATE_WINDOW_SECONDS,
-)
-app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.exception_handler(Exception)
